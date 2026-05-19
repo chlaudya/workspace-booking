@@ -19,23 +19,9 @@ const dmSerif = DM_Serif_Display({
 export const metadata: Metadata = {
   title: 'Build Your Dream Workspace | monis.rent',
   description: 'Design and rent your perfect office setup in Bali. Desks, chairs, monitors, and everything you need as a digital nomad.',
-  generator: 'v0.app',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/icon.svg',
+    apple: '/icon.svg',
   },
 }
 

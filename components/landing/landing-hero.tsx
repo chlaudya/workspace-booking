@@ -14,11 +14,12 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import {
-  AnimatedSection,
   StaggerGroup,
   StaggerItem,
 } from '@/components/motion/animated-section';
+import { HowItWorks } from '@/components/landing/how-it-works';
 import { motionEase, motionDuration } from '@/lib/motion';
+import { smoothScrollTo } from '@/lib/scroll';
 
 const benefitCards = [
   {
@@ -39,25 +40,6 @@ const benefitCards = [
     description:
       'Identity checks, signed terms, and timestamped proof records on every booking.',
     chip: 'Trust-first',
-  },
-];
-
-const steps = [
-  {
-    number: '01',
-    title: 'Pick Your Setup',
-    description:
-      'Choose your desk, chair, monitor, and accessories in the 3D canvas.',
-  },
-  {
-    number: '02',
-    title: 'Confirm Rental',
-    description: 'See transparent weekly pricing and checkout in minutes.',
-  },
-  {
-    number: '03',
-    title: 'Start Working',
-    description: 'We deliver, install, and you are productive the same day.',
   },
 ];
 
@@ -90,7 +72,7 @@ export function LandingHero({ onGetStarted }: { onGetStarted: () => void }) {
   const reduceMotion = useReducedMotion();
 
   const handleSeeFlow = () => {
-    stepsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    smoothScrollTo(stepsRef.current);
   };
 
   return (
@@ -345,41 +327,7 @@ export function LandingHero({ onGetStarted }: { onGetStarted: () => void }) {
           ))}
         </StaggerGroup>
 
-        <AnimatedSection>
-          <div
-            ref={stepsRef}
-            className="mt-12 scroll-mt-24 rounded-2xl border border-border bg-card/70 p-6 lg:p-8"
-          >
-            <p className="text-center text-xs font-semibold tracking-[0.22em] text-primary">
-              HOW IT WORKS
-            </p>
-            <h2 className="mt-2 text-center font-serif text-2xl font-bold text-foreground lg:text-3xl">
-              Go from idea to setup in 3 steps
-            </h2>
-
-            <StaggerGroup className="mt-8 grid gap-5 md:grid-cols-3">
-              {steps.map((step) => (
-                <StaggerItem key={step.number}>
-                  <motion.div
-                    whileHover={reduceMotion ? undefined : { y: -2 }}
-                    transition={{ duration: 0.25, ease: motionEase }}
-                    className="rounded-xl border border-border bg-background/80 p-4 transition-shadow duration-300 hover:shadow-sm"
-                  >
-                    <p className="text-xs font-semibold text-primary">
-                      {step.number}
-                    </p>
-                    <h3 className="mt-2 text-base font-semibold text-foreground">
-                      {step.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {step.description}
-                    </p>
-                  </motion.div>
-                </StaggerItem>
-              ))}
-            </StaggerGroup>
-          </div>
-        </AnimatedSection>
+        <HowItWorks ref={stepsRef} onGetStarted={onGetStarted} />
       </motion.div>
     </section>
   );

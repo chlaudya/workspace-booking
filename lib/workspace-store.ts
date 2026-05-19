@@ -1,6 +1,41 @@
 import { create } from 'zustand';
 import type { Category, Product } from './workspace-data';
+import { products } from './workspace-data';
 import { getGridCapacity, isUnlimited } from './workspace-layout';
+
+/** Default nomad preset applied on first load (Deep Work). */
+export const DEFAULT_PRESET_ID = 'deep-work';
+const DEFAULT_PRESET_PRODUCT_IDS = [
+  'desk-modern',
+  'chair-ergonomic',
+  'monitor-27',
+  'headphones',
+  'lamp',
+] as const;
+
+function buildPresetState(productIds: readonly string[]) {
+  let selectedDesk: Product | null = null;
+  let selectedChair: Product | null = null;
+  const placedItems: PlacedItem[] = [];
+
+  for (const productId of productIds) {
+    const product = products.find((p) => p.id === productId);
+    if (!product) continue;
+
+    if (product.category === 'desk') {
+      selectedDesk = product;
+    } else if (product.category === 'chair') {
+      selectedChair = product;
+    } else {
+      placedItems.push({
+        id: `${product.id}-preset-${placedItems.length}`,
+        product,
+      });
+    }
+  }
+
+  return { selectedDesk, selectedChair, placedItems };
+}
 
 export interface PlacedItem {
   /** Unique placement id (one per occurrence in the scene). */
@@ -34,10 +69,10 @@ function chairPlacement(product: Product): PlacedItem {
   return { id: `chair-${product.id}`, product };
 }
 
+const initialPresetState = buildPresetState(DEFAULT_PRESET_PRODUCT_IDS);
+
 export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
-  placedItems: [],
-  selectedDesk: null,
-  selectedChair: null,
+  ...initialPresetState,
 
   addItem: (product) => {
     if (product.category === 'desk') {

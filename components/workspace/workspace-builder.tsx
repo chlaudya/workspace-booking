@@ -37,11 +37,13 @@ import {
   type Product,
   type Category,
 } from "@/lib/workspace-data";
-import { useWorkspaceStore } from "@/lib/workspace-store";
+import { DEFAULT_PRESET_ID, useWorkspaceStore } from "@/lib/workspace-store";
 import { DraggableItem } from "./draggable-item";
 import { DroppableCanvas } from "./droppable-canvas";
 import { LandingHero } from "../landing/landing-hero";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import { smoothScrollTo } from "@/lib/scroll";
 
 type BookingPhase =
   | "idle"
@@ -50,7 +52,13 @@ type BookingPhase =
   | "hold-authorized"
   | "contract-signed"
   | "key-handoff";
-type CheckoutFlow = "review" | "authorizing" | "confirmed" | "contract" | "signed";
+type CheckoutFlow =
+  | "review"
+  | "authorizing"
+  | "confirmed"
+  | "contract"
+  | "signing"
+  | "signed";
 
 const hostReliability = [
   { label: "Identity", value: "Verified", icon: BadgeCheck },
@@ -120,8 +128,9 @@ export function WorkspaceBuilder() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [contractAccepted, setContractAccepted] = useState(false);
   const orderSummaryRef = useRef<HTMLDivElement>(null);
-  const [selectedPreset, setSelectedPreset] = useState<string>("deep-work");
-  const builderRef = useRef<HTMLElement>(null);
+  const [selectedPreset, setSelectedPreset] =
+    useState<string>(DEFAULT_PRESET_ID);
+  const presetsRef = useRef<HTMLDivElement>(null);
   const bookingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reduceMotion = useReducedMotion();
 
@@ -209,8 +218,14 @@ export function WorkspaceBuilder() {
   const handleCheckoutPrimaryAction = () => {
     if (checkoutFlow === "contract") {
       if (!contractAccepted) return;
-      setBookingPhase("contract-signed");
-      setCheckoutFlow("signed");
+      setCheckoutFlow("signing");
+      if (bookingTimeoutRef.current) {
+        clearTimeout(bookingTimeoutRef.current);
+      }
+      bookingTimeoutRef.current = setTimeout(() => {
+        setBookingPhase("contract-signed");
+        setCheckoutFlow("signed");
+      }, 900);
       return;
     }
     if (checkoutFlow === "signed") {
@@ -228,11 +243,35 @@ export function WorkspaceBuilder() {
     handleAuthorizeHold();
   };
 
+  const isCheckoutLoading =
+    checkoutFlow === "authorizing" || checkoutFlow === "signing";
+
+  const primaryButtonDisabled =
+    checkoutFlow === "signed"
+      ? false
+      : isCheckoutLoading
+        ? true
+        : checkoutFlow === "contract"
+          ? !contractAccepted
+          : !termsAccepted;
+
+  const primaryButtonLabel =
+    checkoutFlow === "signed"
+      ? "Done"
+      : checkoutFlow === "signing"
+        ? "Signing contract..."
+        : checkoutFlow === "contract"
+          ? "Sign Contract"
+          : checkoutFlow === "confirmed"
+            ? "Continue to Contract"
+            : checkoutFlow === "authorizing"
+              ? "Authorizing hold..."
+              : "Authorize Hold";
+
   const renderTrustTimeline = (compact = false) => (
     <div className={compact ? "space-y-2" : "space-y-2"}>
       {trustTimeline.map((step, index) => {
-        const isReached =
-          bookingPhaseIndex >= 0 && bookingPhaseIndex >= index;
+        const isReached = bookingPhaseIndex >= 0 && bookingPhaseIndex >= index;
         const isCurrent = step.key === bookingPhase;
         return (
           <div key={step.key} className="flex items-center gap-2">
@@ -341,15 +380,10 @@ export function WorkspaceBuilder() {
         </motion.header>
 
         {/* Landing Hero */}
-        <LandingHero
-          onGetStarted={() => {
-            builderRef.current?.scrollIntoView({ behavior: "smooth" });
-          }}
-        />
+        <LandingHero onGetStarted={() => smoothScrollTo(presetsRef.current)} />
 
         {/* Main Builder Section */}
         <motion.section
-          ref={builderRef}
           initial={reduceMotion ? false : { opacity: 0 }}
           whileInView={reduceMotion ? undefined : { opacity: 1 }}
           viewport={{ once: true, margin: "-40px" }}
@@ -357,6 +391,7 @@ export function WorkspaceBuilder() {
           className="py-8 lg:py-12 scroll-mt-20"
         >
           <motion.div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div ref={presetsRef} id="nomad-presets" className="scroll-mt-24">
             <AnimatedSection className="mb-6 rounded-2xl border border-border bg-card/80 p-4 lg:p-5">
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div>
@@ -403,9 +438,10 @@ export function WorkspaceBuilder() {
                 ))}
               </StaggerGroup>
             </AnimatedSection>
-            <StaggerGroup className="grid lg:grid-cols-12 gap-6 lg:gap-8">
+            </div>
+            <StaggerGroup className="grid items-start gap-6 lg:grid-cols-12 lg:gap-8">
               {/* Product Catalog - Left Sidebar */}
-              <StaggerItem className="lg:col-span-3 order-2 lg:order-1">
+              <StaggerItem className="order-2 self-start lg:order-1 lg:col-span-3">
                 <div className="sticky top-24">
                   <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                     <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm">
@@ -456,8 +492,9 @@ export function WorkspaceBuilder() {
               </StaggerItem>
 
               {/* Workspace Canvas - Center */}
-              <StaggerItem className="lg:col-span-6 order-1 lg:order-2">
-                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <StaggerItem className="order-1 self-start lg:order-2 lg:col-span-6">
+                <div className="sticky top-24">
+                  <h3 className="scroll-mt-24 mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
                   <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm">
                     2
                   </span>
@@ -519,192 +556,193 @@ export function WorkspaceBuilder() {
                     time-stamped in your Proof Center.
                   </p>
                 </div>
+                </div>
               </StaggerItem>
 
               {/* Order Summary - Right Sidebar */}
-              <StaggerItem className="lg:col-span-3 order-3 hidden lg:block">
-                <div ref={orderSummaryRef} className="scroll-mt-24">
-                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm">
-                    3
-                  </span>
-                  Your Order
-                </h3>
-                <div className="sticky top-24 bg-card rounded-2xl border border-border p-4">
-                  <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
-                    <ShoppingCart className="w-5 h-5 text-primary" />
-                    <span className="font-medium text-foreground">
-                      Setup Summary
+              <StaggerItem className="order-3 hidden self-start lg:col-span-3 lg:block">
+                <div ref={orderSummaryRef} className="sticky top-24 scroll-mt-24">
+                  <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm">
+                      3
                     </span>
-                    <span className="ml-auto bg-primary/10 text-primary text-xs font-medium px-2 py-0.5 rounded-full">
-                      {itemCount} items
-                    </span>
-                  </div>
+                    Your Order
+                  </h3>
+                  <div className="max-h-[calc(100vh-11rem)] overflow-y-auto rounded-2xl border border-border bg-card p-4">
+                    <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
+                      <ShoppingCart className="w-5 h-5 text-primary" />
+                      <span className="font-medium text-foreground">
+                        Setup Summary
+                      </span>
+                      <span className="ml-auto bg-primary/10 text-primary text-xs font-medium px-2 py-0.5 rounded-full">
+                        {itemCount} items
+                      </span>
+                    </div>
 
-                  {/* Items list */}
-                  <div className="space-y-3 max-h-[35vh] overflow-y-auto mb-4">
-                    <AnimatePresence mode="popLayout">
-                      {allItems.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-8">
-                          Your workspace is empty.
-                          <br />
-                          Start by adding a desk!
-                        </p>
-                      ) : (
-                        allItems.map((item) => (
-                          <motion.div
-                            key={item.id}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="flex items-center gap-3 p-2 rounded-lg bg-secondary/50 group"
-                          >
-                            <div className="w-10 h-10 rounded-lg bg-background overflow-hidden flex-shrink-0">
-                              <Image
-                                src={item.product.image}
-                                alt={item.product.name}
-                                width={40}
-                                height={40}
-                                className="w-full h-full object-contain"
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">
-                                {item.product.name}
-                              </p>
-                              <p className="text-xs text-primary font-semibold">
-                                ${item.product.pricePerWeek}/wk
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => removeItem(item.id)}
-                              className="p-1 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                    {/* Items list */}
+                    <div className="mb-4 space-y-3">
+                      <AnimatePresence mode="popLayout">
+                        {allItems.length === 0 ? (
+                          <p className="text-sm text-muted-foreground text-center py-8">
+                            Your workspace is empty.
+                            <br />
+                            Start by adding a desk!
+                          </p>
+                        ) : (
+                          allItems.map((item) => (
+                            <motion.div
+                              key={item.id}
+                              initial={{ opacity: 0, x: 20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -20 }}
+                              className="flex items-center gap-3 p-2 rounded-lg bg-secondary/50 group"
                             >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </motion.div>
-                        ))
-                      )}
-                    </AnimatePresence>
-                  </div>
+                              <div className="w-10 h-10 rounded-lg bg-background overflow-hidden flex-shrink-0">
+                                <Image
+                                  src={item.product.image}
+                                  alt={item.product.name}
+                                  width={40}
+                                  height={40}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">
+                                  {item.product.name}
+                                </p>
+                                <p className="text-xs text-primary font-semibold">
+                                  ${item.product.pricePerWeek}/wk
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => removeItem(item.id)}
+                                className="p-1 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </motion.div>
+                          ))
+                        )}
+                      </AnimatePresence>
+                    </div>
 
-                  {/* Pricing */}
-                  <div className="space-y-2 py-4 border-t border-border">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Base rent</span>
-                      <span className="font-semibold text-foreground">
-                        ${baseWeeklyPrice}/wk
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Service fee</span>
-                      <span className="font-semibold text-foreground">
-                        ${serviceFee}/wk
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        Refundable deposit hold
-                      </span>
-                      <span className="font-semibold text-foreground">
-                        ${refundableDeposit}/wk
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm pt-2 border-t border-border">
-                      <span className="text-foreground font-semibold">
-                        Total
-                      </span>
-                      <span className="font-bold text-primary">
-                        ${weeklyTotal}/wk
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground">
-                      No hidden fees. Full breakdown shown before checkout.
-                    </p>
-                  </div>
-
-                  {/* Rent CTA */}
-                  <button
-                    onClick={() => {
-                      setCheckoutFlow("review");
-                      setShowCheckout(true);
-                      setBookingPhase("request-sent");
-                    }}
-                    disabled={itemCount === 0}
-                    className={cn(
-                      "w-full py-3 rounded-xl font-semibold transition-all duration-200",
-                      itemCount > 0
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25"
-                        : "bg-secondary text-muted-foreground cursor-not-allowed",
-                    )}
-                  >
-                    {itemCount > 0
-                      ? requiresAvailabilityConfirmation
-                        ? "Request Availability Confirmation"
-                        : "Request to Book (No charge yet)"
-                      : "Add items to rent"}
-                  </button>
-
-                  {itemCount > 0 && (
-                    <div className="text-xs text-center text-muted-foreground mt-3 space-y-1">
-                      <p>Free cancellation until host confirms.</p>
-                      <p>
-                        You&apos;re protected by verified identity and signed
-                        rental terms.
+                    {/* Pricing */}
+                    <div className="space-y-2 py-4 border-t border-border">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Base rent</span>
+                        <span className="font-semibold text-foreground">
+                          ${baseWeeklyPrice}/wk
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          Service fee
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          ${serviceFee}/wk
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          Refundable deposit hold
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          ${refundableDeposit}/wk
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm pt-2 border-t border-border">
+                        <span className="text-foreground font-semibold">
+                          Total
+                        </span>
+                        <span className="font-bold text-primary">
+                          ${weeklyTotal}/wk
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        No hidden fees. Full breakdown shown before checkout.
                       </p>
                     </div>
-                  )}
 
-                  <div className="mt-4 border-t border-border pt-4 space-y-3">
-                    <p className="text-xs font-semibold tracking-[0.18em] text-primary">
-                      HOST RELIABILITY
-                    </p>
-                    <div className="space-y-2">
-                      {hostReliability.map((metric) => (
-                        <div
-                          key={metric.label}
-                          className="flex items-center justify-between text-xs"
-                        >
-                          <span className="inline-flex items-center gap-2 text-muted-foreground">
-                            <metric.icon className="w-3.5 h-3.5 text-primary" />
-                            {metric.label}
-                          </span>
-                          <span className="font-semibold text-foreground">
-                            {metric.value}
-                          </span>
-                        </div>
-                      ))}
+                    {/* Rent CTA */}
+                    <button
+                      onClick={() => {
+                        setCheckoutFlow("review");
+                        setShowCheckout(true);
+                        setBookingPhase("request-sent");
+                      }}
+                      disabled={itemCount === 0}
+                      className={cn(
+                        "w-full py-3 rounded-xl font-semibold transition-all duration-200",
+                        itemCount > 0
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25"
+                          : "bg-secondary text-muted-foreground cursor-not-allowed",
+                      )}
+                    >
+                      {itemCount > 0
+                        ? requiresAvailabilityConfirmation
+                          ? "Request Availability Confirmation"
+                          : "Request to Book (No charge yet)"
+                        : "Add items to rent"}
+                    </button>
+
+                    {itemCount > 0 && (
+                      <div className="text-xs text-center text-muted-foreground mt-3 space-y-1">
+                        <p>Free cancellation until host confirms.</p>
+                        <p>
+                          You&apos;re protected by verified identity and signed
+                          rental terms.
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="mt-4 border-t border-border pt-4 space-y-3">
+                      <p className="text-xs font-semibold tracking-[0.18em] text-primary">
+                        HOST RELIABILITY
+                      </p>
+                      <div className="space-y-2">
+                        {hostReliability.map((metric) => (
+                          <div
+                            key={metric.label}
+                            className="flex items-center justify-between text-xs"
+                          >
+                            <span className="inline-flex items-center gap-2 text-muted-foreground">
+                              <metric.icon className="w-3.5 h-3.5 text-primary" />
+                              {metric.label}
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              {metric.value}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {bookingPhase === "contract-signed" && (
+                      <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-700">
+                        Contract signed and archived in Proof Center. Awaiting
+                        key handoff from host.
+                      </div>
+                    )}
+
+                    <div className="mt-4 border-t border-border pt-4">
+                      <p className="text-xs font-semibold tracking-[0.18em] text-primary mb-3">
+                        TRUST TIMELINE
+                      </p>
+                      <div className="space-y-2">{renderTrustTimeline()}</div>
+                    </div>
+
+                    <div className="mt-4 border-t border-border pt-4 text-xs text-muted-foreground space-y-1">
+                      <p className="font-semibold text-foreground inline-flex items-center gap-2">
+                        <FileCheck2 className="w-3.5 h-3.5 text-primary" />
+                        Proof Center
+                      </p>
+                      <p>
+                        Chat log, receipts, contract history, and inspection
+                        photos are saved with timestamps.
+                      </p>
+                      <p>Dispute response SLA: within 24 hours.</p>
                     </div>
                   </div>
-
-                  {bookingPhase === "contract-signed" && (
-                    <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-700">
-                      Contract signed and archived in Proof Center. Awaiting
-                      key handoff from host.
-                    </div>
-                  )}
-
-                  <div className="mt-4 border-t border-border pt-4">
-                    <p className="text-xs font-semibold tracking-[0.18em] text-primary mb-3">
-                      TRUST TIMELINE
-                    </p>
-                    <div className="space-y-2">
-                      {renderTrustTimeline()}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 border-t border-border pt-4 text-xs text-muted-foreground space-y-1">
-                    <p className="font-semibold text-foreground inline-flex items-center gap-2">
-                      <FileCheck2 className="w-3.5 h-3.5 text-primary" />
-                      Proof Center
-                    </p>
-                    <p>
-                      Chat log, receipts, contract history, and inspection
-                      photos are saved with timestamps.
-                    </p>
-                    <p>Dispute response SLA: within 24 hours.</p>
-                  </div>
-                </div>
                 </div>
               </StaggerItem>
             </StaggerGroup>
@@ -892,7 +930,10 @@ export function WorkspaceBuilder() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={resetCheckoutModal}
+            onClick={() => {
+              if (isCheckoutLoading) return;
+              resetCheckoutModal();
+            }}
           >
             <motion.div
               initial={{ scale: 0.96, opacity: 0, y: 12 }}
@@ -940,6 +981,16 @@ export function WorkspaceBuilder() {
                       Next step: key handoff from host.
                     </p>
                   </div>
+                </div>
+              ) : checkoutFlow === "signing" ? (
+                <div className="mb-6 flex flex-col items-center justify-center rounded-xl border border-border bg-background/70 px-6 py-10 text-center">
+                  <Spinner className="size-8 text-primary" />
+                  <p className="mt-4 font-semibold text-foreground">
+                    Signing contract
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Recording your e-signature in Proof Center...
+                  </p>
                 </div>
               ) : checkoutFlow === "contract" ? (
                 <>
@@ -997,130 +1048,144 @@ export function WorkspaceBuilder() {
                 </>
               ) : (
                 <>
-              <div className="mb-4 rounded-xl border border-border bg-background/70 p-3 text-xs text-muted-foreground space-y-1">
-                <p className="font-semibold text-foreground">
-                  What happens next
-                </p>
-                <p>1. Request sent to host</p>
-                <p>2. Hold authorization (ETA ~20s after confirmation)</p>
-                <p>3. Contract summary review and e-sign</p>
-              </div>
+                  <div className="mb-4 rounded-xl border border-border bg-background/70 p-3 text-xs text-muted-foreground space-y-1">
+                    <p className="font-semibold text-foreground">
+                      What happens next
+                    </p>
+                    <p>1. Request sent to host</p>
+                    <p>2. Hold authorization (ETA ~20s after confirmation)</p>
+                    <p>3. Contract summary review and e-sign</p>
+                  </div>
 
-              <div className="space-y-2 mb-6 max-h-48 overflow-y-auto">
-                {allItems.map((item) => (
-                  <div key={item.id} className="flex justify-between text-sm">
-                    <span>{item.product.name}</span>
-                    <span className="font-medium">
-                      ${item.product.pricePerWeek}/wk
+                  <div className="space-y-2 mb-6 max-h-48 overflow-y-auto">
+                    {allItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex justify-between text-sm"
+                      >
+                        <span>{item.product.name}</span>
+                        <span className="font-medium">
+                          ${item.product.pricePerWeek}/wk
+                        </span>
+                      </div>
+                    ))}
+                    <div className="border-t border-border pt-2 space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Base rent</span>
+                        <span className="font-medium">
+                          ${baseWeeklyPrice}/wk
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Service fee
+                        </span>
+                        <span className="font-medium">${serviceFee}/wk</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Deposit hold
+                        </span>
+                        <span className="font-medium">
+                          ${refundableDeposit}/wk
+                        </span>
+                      </div>
+                    </div>
+                    <div className="border-t border-border pt-2 flex justify-between font-semibold">
+                      <span>Total</span>
+                      <span className="text-primary">${weeklyTotal}/week</span>
+                    </div>
+                  </div>
+
+                  <details className="mb-4 rounded-xl border border-border p-3 text-sm">
+                    <summary className="cursor-pointer font-medium text-foreground">
+                      Cancellation and protection policy
+                    </summary>
+                    <p className="mt-2 text-muted-foreground">
+                      Free cancellation until host confirmation. After
+                      confirmation, cancellation follows the signed terms. Every
+                      update is logged in your Proof Center for dispute support.
+                    </p>
+                  </details>
+
+                  <label className="mb-5 flex items-start gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={termsAccepted}
+                      onChange={(event) =>
+                        setTermsAccepted(event.target.checked)
+                      }
+                      className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                    />
+                    <span className="text-muted-foreground">
+                      I reviewed the fee breakdown, cancellation policy, and
+                      rental terms acknowledgment.
                     </span>
-                  </div>
-                ))}
-                <div className="border-t border-border pt-2 space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Base rent</span>
-                    <span className="font-medium">${baseWeeklyPrice}/wk</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Service fee</span>
-                    <span className="font-medium">${serviceFee}/wk</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Deposit hold</span>
-                    <span className="font-medium">${refundableDeposit}/wk</span>
-                  </div>
-                </div>
-                <div className="border-t border-border pt-2 flex justify-between font-semibold">
-                  <span>Total</span>
-                  <span className="text-primary">${weeklyTotal}/week</span>
-                </div>
-              </div>
+                  </label>
 
-              <details className="mb-4 rounded-xl border border-border p-3 text-sm">
-                <summary className="cursor-pointer font-medium text-foreground">
-                  Cancellation and protection policy
-                </summary>
-                <p className="mt-2 text-muted-foreground">
-                  Free cancellation until host confirmation. After confirmation,
-                  cancellation follows the signed terms. Every update is logged
-                  in your Proof Center for dispute support.
-                </p>
-              </details>
+                  {checkoutFlow === "authorizing" && (
+                    <div className="mb-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-xs text-primary">
+                      <div className="flex items-center gap-2">
+                        <Spinner className="size-3.5 shrink-0" />
+                        <span>
+                          Authorizing payment hold. Expected completion: ~20
+                          seconds.
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
-              <label className="mb-5 flex items-start gap-3 text-sm">
-                <input
-                  type="checkbox"
-                  checked={termsAccepted}
-                  onChange={(event) => setTermsAccepted(event.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary"
-                />
-                <span className="text-muted-foreground">
-                  I reviewed the fee breakdown, cancellation policy, and rental
-                  terms acknowledgment.
-                </span>
-              </label>
-
-              {checkoutFlow === "authorizing" && (
-                <div className="mb-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-xs text-primary">
-                  Authorizing payment hold now. Deterministic status:{" "}
-                  <strong>in-progress</strong>. Expected completion: ~20
-                  seconds.
-                </div>
-              )}
-
-              {checkoutFlow === "confirmed" && (
-                <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-700">
-                  Host confirmed and payment hold authorized. Contract summary
-                  is ready for e-sign.
-                </div>
-              )}
+                  {checkoutFlow === "confirmed" && (
+                    <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-700">
+                      Host confirmed and payment hold authorized. Contract
+                      summary is ready for e-sign.
+                    </div>
+                  )}
                 </>
               )}
 
-              <div className="flex gap-3">
-                {checkoutFlow !== "signed" && (
-                  <button
-                    onClick={() => {
-                      if (checkoutFlow === "contract") {
-                        setCheckoutFlow("confirmed");
-                        setContractAccepted(false);
-                        return;
-                      }
-                      resetCheckoutModal();
-                    }}
-                    className="flex-1 py-3 rounded-xl border border-border text-foreground font-medium hover:bg-secondary transition-colors"
-                  >
-                    {checkoutFlow === "contract" ? "Back" : "Keep Editing"}
-                  </button>
-                )}
-                <button
-                  disabled={
-                    checkoutFlow === "signed"
-                      ? false
-                      : checkoutFlow === "contract"
-                        ? !contractAccepted
-                        : !termsAccepted || checkoutFlow === "authorizing"
-                  }
-                  onClick={handleCheckoutPrimaryAction}
-                  className={cn(
-                    checkoutFlow === "signed" ? "w-full" : "flex-1",
-                    "py-3 rounded-xl font-semibold transition-colors",
-                    checkoutFlow !== "signed" &&
-                      (checkoutFlow === "contract"
-                        ? !contractAccepted
-                        : !termsAccepted || checkoutFlow === "authorizing")
-                      ? "bg-secondary text-muted-foreground cursor-not-allowed"
-                      : "bg-primary text-primary-foreground hover:bg-primary/90",
+              {checkoutFlow !== "signing" && (
+                <div className="flex gap-3">
+                  {checkoutFlow !== "signed" && (
+                    <button
+                      disabled={isCheckoutLoading}
+                      onClick={() => {
+                        if (checkoutFlow === "contract") {
+                          setCheckoutFlow("confirmed");
+                          setContractAccepted(false);
+                          return;
+                        }
+                        resetCheckoutModal();
+                      }}
+                      className={cn(
+                        "flex-1 py-3 rounded-xl border border-border text-foreground font-medium transition-colors",
+                        isCheckoutLoading
+                          ? "cursor-not-allowed opacity-50"
+                          : "hover:bg-secondary",
+                      )}
+                    >
+                      {checkoutFlow === "contract" ? "Back" : "Keep Editing"}
+                    </button>
                   )}
-                >
-                  {checkoutFlow === "signed"
-                    ? "Done"
-                    : checkoutFlow === "contract"
-                      ? "Sign Contract"
-                      : checkoutFlow === "confirmed"
-                        ? "Continue to Contract"
-                        : "Authorize Hold"}
-                </button>
-              </div>
+                  <button
+                    disabled={primaryButtonDisabled}
+                    onClick={handleCheckoutPrimaryAction}
+                    className={cn(
+                      checkoutFlow === "signed" ? "w-full" : "flex-1",
+                      "py-3 rounded-xl font-semibold transition-colors inline-flex items-center justify-center gap-2",
+                      primaryButtonDisabled && !isCheckoutLoading
+                        ? "bg-secondary text-muted-foreground cursor-not-allowed"
+                        : "bg-primary text-primary-foreground hover:bg-primary/90",
+                      isCheckoutLoading && "opacity-90 cursor-wait",
+                    )}
+                  >
+                    {isCheckoutLoading && (
+                      <Spinner className="size-4 text-primary-foreground" />
+                    )}
+                    {primaryButtonLabel}
+                  </button>
+                </div>
+              )}
 
               <button
                 onClick={() =>

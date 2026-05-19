@@ -39,7 +39,7 @@ export function DraggableItem({ product, isSelected, onQuickAdd }: DraggableItem
     >
       {/* Popular badge */}
       {product.popular && (
-        <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
+        <span className="absolute top-1.5 right-1.5 z-10 rounded-full bg-accent px-2 py-1 text-[10px] font-semibold leading-none text-accent-foreground shadow-sm">
           Popular
         </span>
       )}
