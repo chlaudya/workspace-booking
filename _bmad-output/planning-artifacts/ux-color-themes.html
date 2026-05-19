@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UX Color Themes - workspace-design-tool</title>
+    <style>
+      body {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        margin: 0;
+        background: #f7f8f6;
+        color: #0f1720;
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+      h1 { margin: 0 0 8px; }
+      p { color: #5d6974; margin: 0 0 20px; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #e3e7e4;
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .swatch {
+        height: 92px;
+      }
+      .meta {
+        padding: 10px 12px;
+      }
+      .meta strong {
+        display: block;
+        margin-bottom: 2px;
+      }
+      .meta code {
+        font-size: 12px;
+        color: #334155;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .tiny { height: 42px; }
+      .legend {
+        margin-top: 16px;
+        background: #fff;
+        border: 1px solid #e3e7e4;
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Warm Premium Tropical Palette</h1>
+      <p>Selected visual foundation for the nomad rental booking experience.</p>
+
+      <section class="grid">
+        <article class="card">
+          <div class="swatch" style="background:#0f766e"></div>
+          <div class="meta"><strong>Primary</strong><code>#0F766E</code></div>
+        </article>
+        <article class="card">
+          <div class="swatch" style="background:#d6c7a8"></div>
+          <div class="meta"><strong>Secondary</strong><code>#D6C7A8</code></div>
+        </article>
+        <article class="card">
+          <div class="swatch" style="background:#c9a34a"></div>
+          <div class="meta"><strong>Accent</strong><code>#C9A34A</code></div>
+        </article>
+        <article class="card">
+          <div class="swatch" style="background:#0f1720"></div>
+          <div class="meta"><strong>Text</strong><code>#0F1720</code></div>
+        </article>
+      </section>
+
+      <section class="card" style="margin-top:14px;">
+        <div class="row">
+          <div class="tiny" style="background:#1f9d6a"></div>
+          <div class="tiny" style="background:#e1a93a"></div>
+          <div class="tiny" style="background:#db5f61"></div>
+          <div class="tiny" style="background:#2e85a3"></div>
+        </div>
+        <div class="meta">
+          <strong>Semantic Colors</strong>
+          <code>Success #1F9D6A • Warning #E1A93A • Error #DB5F61 • Info #2E85A3</code>
+        </div>
+      </section>
+
+      <div class="legend">
+        Usage: high-chroma colors are reserved for trust/status/CTA signals. Neutral surfaces keep the experience premium and calm.
+      </div>
+    </main>
+  </body>
+</html>
