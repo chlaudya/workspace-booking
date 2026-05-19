@@ -62,6 +62,7 @@ export const HowItWorks = forwardRef<HTMLDivElement, HowItWorksProps>(
     return (
       <AnimatedSection>
         <section
+          id="how-it-works"
           ref={ref}
           className="relative scroll-mt-24 overflow-hidden rounded-2xl border border-primary/15 bg-gradient-to-b from-primary/[0.07] via-card to-secondary/40 py-10 sm:py-12"
         >

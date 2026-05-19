@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { motionEase, motionDuration } from '@/lib/motion';
-import { smoothScrollTo } from '@/lib/scroll';
+import { smoothScrollToId } from '@/lib/scroll';
 import { LandingPersonas } from '@/components/landing/landing-personas';
 import { LandingBenefits } from '@/components/landing/landing-benefits';
 import { HowItWorks } from '@/components/landing/how-it-works';
@@ -30,12 +30,12 @@ export function LandingHero({ onGetStarted }: { onGetStarted: () => void }) {
   const reduceMotion = useReducedMotion();
 
   const handleSeeFlow = () => {
-    smoothScrollTo(stepsRef.current);
+    smoothScrollToId('how-it-works');
   };
 
   return (
     <>
-      <section className="relative overflow-hidden">
+      <section id="hero" className="relative scroll-mt-20 overflow-hidden">
         <motion.div
           className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,oklch(0.55_0.15_145/0.12),transparent)]"
           initial={false}
@@ -55,7 +55,7 @@ export function LandingHero({ onGetStarted }: { onGetStarted: () => void }) {
           />
         </motion.div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-4 pt-12 sm:px-6 lg:px-8 lg:pt-20">
+        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-4 pt-8 sm:px-6 sm:pt-10 lg:px-8 lg:pt-14">
           <motion.div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-6">
               <motion.div

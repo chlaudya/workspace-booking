@@ -12,10 +12,10 @@ import { DEFAULT_PRESET_ID, useWorkspaceStore } from "@/lib/workspace-store";
 import { LandingHero } from "../landing/landing-hero";
 import { smoothScrollTo } from "@/lib/scroll";
 import { BuilderMainSection } from "./builder/builder-main-section";
-import { WorkspaceBuilderHeader } from "./builder/workspace-builder-header";
+import { SiteHeader } from "../landing/site-header";
 import { MobileCartBar } from "./builder/mobile-cart-bar";
 import { MobileCartDrawer } from "./builder/mobile-cart-drawer";
-import { BuilderFooter } from "./builder/builder-footer";
+import { SiteFooter } from "../landing/site-footer";
 import { DragOverlayPreview } from "./builder/drag-overlay-preview";
 import { CheckoutModal } from "./builder/checkout-modal";
 import { useCheckoutFlow } from "./builder/use-checkout-flow";
@@ -102,10 +102,7 @@ export function WorkspaceBuilder() {
   };
 
   const scrollToOrderSummary = () => {
-    orderSummaryRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-    });
+    smoothScrollTo(orderSummaryRef.current);
   };
 
   const handleStartCheckout = () => {
@@ -121,9 +118,10 @@ export function WorkspaceBuilder() {
       collisionDetection={pointerWithin}
     >
       <div className="min-h-screen overflow-x-clip bg-background">
-        <WorkspaceBuilderHeader
+        <SiteHeader
           itemCount={itemCount}
           onOpenMobileCart={() => setShowMobileCart(true)}
+          onGetStarted={() => smoothScrollTo(presetsRef.current)}
         />
 
         <LandingHero onGetStarted={() => smoothScrollTo(presetsRef.current)} />
@@ -165,7 +163,7 @@ export function WorkspaceBuilder() {
           {...pricing}
         />
 
-        <BuilderFooter />
+        <SiteFooter />
       </div>
 
       <DragOverlayPreview activeProduct={activeProduct} />

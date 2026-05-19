@@ -42,7 +42,10 @@ export function LandingBenefits() {
 
   return (
     <AnimatedSection>
-      <section className="relative overflow-x-clip border-b border-border/60 bg-secondary/40 py-16 sm:py-20">
+      <section
+        id="benefits"
+        className="relative scroll-mt-24 overflow-x-clip border-b border-border/60 bg-secondary/40 py-16 sm:py-20"
+      >
         <motion.div
           aria-hidden
           className="pointer-events-none absolute inset-0"

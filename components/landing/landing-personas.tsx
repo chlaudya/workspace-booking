@@ -32,7 +32,10 @@ export function LandingPersonas() {
 
   return (
     <AnimatedSection>
-      <section className="overflow-x-clip border-b border-primary/10 bg-primary/[0.06] py-16 sm:py-20 lg:py-24">
+      <section
+        id="personas"
+        className="scroll-mt-24 overflow-x-clip border-b border-primary/10 bg-primary/[0.06] py-16 sm:py-20 lg:py-24"
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm font-semibold tracking-[0.22em] text-primary sm:text-base">
             WHO IT&apos;S FOR
