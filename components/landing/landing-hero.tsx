@@ -4,59 +4,17 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useRef } from 'react';
 import {
   Sparkles,
-  Truck,
-  Calendar,
-  Shield,
   ArrowRight,
   CheckCircle2,
   PlayCircle,
   Star,
 } from 'lucide-react';
 import Image from 'next/image';
-import {
-  StaggerGroup,
-  StaggerItem,
-} from '@/components/motion/animated-section';
-import { HowItWorks } from '@/components/landing/how-it-works';
 import { motionEase, motionDuration } from '@/lib/motion';
 import { smoothScrollTo } from '@/lib/scroll';
-
-const benefitCards = [
-  {
-    icon: Truck,
-    title: 'Same-Day Delivery',
-    description: 'We deliver and set up your workstation anywhere in Bali.',
-    chip: 'Free delivery',
-  },
-  {
-    icon: Calendar,
-    title: 'Flexible Rentals',
-    description: 'Rent weekly or monthly with no lock-in contracts.',
-    chip: 'No minimum',
-  },
-  {
-    icon: Shield,
-    title: 'Verified Rental Protection',
-    description:
-      'Identity checks, signed terms, and timestamped proof records on every booking.',
-    chip: 'Trust-first',
-  },
-];
-
-const nomadProfiles = [
-  {
-    title: 'Remote Engineer',
-    detail: 'Dual-screen focus with ergonomic support',
-  },
-  {
-    title: 'Product Consultant',
-    detail: 'Client-call ready with premium camera and audio',
-  },
-  {
-    title: 'Indie Founder',
-    detail: 'Lean setup that scales week by week',
-  },
-];
+import { LandingPersonas } from '@/components/landing/landing-personas';
+import { LandingBenefits } from '@/components/landing/landing-benefits';
+import { HowItWorks } from '@/components/landing/how-it-works';
 
 const heroItem = (delay: number, reduceMotion: boolean | null) =>
   reduceMotion
@@ -76,259 +34,161 @@ export function LandingHero({ onGetStarted }: { onGetStarted: () => void }) {
   };
 
   return (
-    <section className="relative overflow-hidden border-b border-border/60">
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-background to-background"
-        initial={false}
-      />
-      <motion.div
-        className="absolute inset-0 overflow-hidden pointer-events-none"
-        initial={false}
-      >
+    <>
+      <section className="relative overflow-hidden">
         <motion.div
-          className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-primary/10 blur-3xl"
-          animate={
-            reduceMotion
-              ? undefined
-              : {
-                  scale: [1, 1.12, 1],
-                  opacity: [0.2, 0.4, 0.2],
-                }
-          }
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,oklch(0.55_0.15_145/0.12),transparent)]"
+          initial={false}
         />
         <motion.div
-          className="absolute bottom-0 -left-20 h-72 w-72 rounded-full bg-accent/10 blur-3xl"
-          animate={
-            reduceMotion
-              ? undefined
-              : {
-                  scale: [1.1, 1, 1.1],
-                  opacity: [0.2, 0.4, 0.2],
-                }
-          }
-          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      </motion.div>
-
-      <div
-        className="absolute inset-0 opacity-[0.02]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}
-      />
-
-      <motion.div
-        className="relative z-10 mx-auto max-w-7xl px-4 pb-14 pt-12 sm:px-6 lg:px-8 lg:pt-16"
-        initial={false}
-      >
-        <div className="grid items-center gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-6">
-            <motion.div
-              {...heroItem(0, reduceMotion)}
-              className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-medium text-primary"
-            >
-              <Sparkles className="h-4 w-4" />
-              Built for digital nomads in Bali
-              <span className="inline-flex items-center gap-1 text-amber-500">
-                <Star className="h-3 w-3 fill-current" />
-                4.9
-              </span>
-            </motion.div>
-
-            <motion.h1
-              {...heroItem(0.08, reduceMotion)}
-              className="font-serif text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl"
-            >
-              Build your ideal workspace.
-              <span className="block text-primary">We deliver it today.</span>
-            </motion.h1>
-
-            <motion.p
-              {...heroItem(0.16, reduceMotion)}
-              className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground"
-            >
-              A premium rental experience for nomad professionals. Build your
-              setup in 3D, see transparent pricing instantly, and move from
-              request to delivery with trust signals at every step.
-            </motion.p>
-
-            <motion.div
-              {...heroItem(0.24, reduceMotion)}
-              className="mt-8 flex flex-col gap-3 sm:flex-row"
-            >
-              <button
-                onClick={onGetStarted}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-7 py-3.5 font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98]"
-              >
-                Start Building
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-              </button>
-              <button
-                onClick={handleSeeFlow}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-7 py-3.5 font-semibold text-foreground transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-primary/30 hover:bg-primary/5 active:scale-[0.98]"
-              >
-                <PlayCircle className="h-4 w-4 text-primary" />
-                How It Works
-              </button>
-            </motion.div>
-
-            <motion.div
-              {...heroItem(0.32, reduceMotion)}
-              className="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground"
-            >
-              <span className="inline-flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary" />
-                No hidden fees
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary" />
-                No payment captured until host confirms
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary" />
-                Proof Center with time-stamped records
-              </span>
-            </motion.div>
-
-            <StaggerGroup className="mt-6 grid gap-3 sm:grid-cols-3" immediate>
-              {nomadProfiles.map((profile) => (
-                <StaggerItem key={profile.title}>
-                  <motion.div
-                    whileHover={reduceMotion ? undefined : { y: -2 }}
-                    transition={{ duration: 0.25, ease: motionEase }}
-                    className="rounded-xl border border-border/80 bg-card/80 p-3 backdrop-blur-sm transition-shadow duration-300 hover:shadow-md"
-                  >
-                    <p className="text-sm font-semibold text-foreground">
-                      {profile.title}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {profile.detail}
-                    </p>
-                  </motion.div>
-                </StaggerItem>
-              ))}
-            </StaggerGroup>
-          </div>
-
+          className="absolute inset-0 overflow-hidden pointer-events-none"
+          initial={false}
+        >
           <motion.div
-            {...heroItem(0.12, reduceMotion)}
-            className="lg:col-span-6"
-          >
-            <motion.div
-              whileHover={reduceMotion ? undefined : { y: -4 }}
-              transition={{ duration: 0.4, ease: motionEase }}
-              className="relative mx-auto max-w-2xl rounded-3xl border border-border/70 bg-card p-3 shadow-2xl shadow-black/10"
-            >
+            className="absolute -top-32 right-0 h-[420px] w-[420px] rounded-full bg-primary/8 blur-3xl"
+            animate={
+              reduceMotion
+                ? undefined
+                : { scale: [1, 1.08, 1], opacity: [0.3, 0.5, 0.3] }
+            }
+            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        </motion.div>
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-4 pt-12 sm:px-6 lg:px-8 lg:pt-20">
+          <motion.div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-6">
               <motion.div
-                className="mb-3 flex items-center gap-2 px-2"
-                initial={reduceMotion ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.35, duration: 0.4 }}
+                {...heroItem(0, reduceMotion)}
+                className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-background/80 px-4 py-2 text-sm font-medium text-primary shadow-sm backdrop-blur-md"
               >
-                <motion.div
-                  className="h-2.5 w-2.5 rounded-full bg-red-400/80"
-                  initial={reduceMotion ? false : { scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.4, type: 'spring', stiffness: 400 }}
-                />
-                <motion.div
-                  className="h-2.5 w-2.5 rounded-full bg-yellow-400/80"
-                  initial={reduceMotion ? false : { scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.45, type: 'spring', stiffness: 400 }}
-                />
-                <motion.div
-                  className="h-2.5 w-2.5 rounded-full bg-green-400/80"
-                  initial={reduceMotion ? false : { scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.5, type: 'spring', stiffness: 400 }}
-                />
-                <span className="ml-2 text-xs text-muted-foreground">
-                  monis.rent/builder
+                <Sparkles className="h-4 w-4" />
+                Built for digital nomads in Bali
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-amber-600 dark:text-amber-400">
+                  <Star className="h-3 w-3 fill-current" />
+                  4.9
                 </span>
               </motion.div>
 
-              <motion.div
-                className="relative aspect-[16/10] overflow-hidden rounded-2xl"
-                initial={reduceMotion ? false : { opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2, duration: 0.6, ease: motionEase }}
+              <motion.h1
+                {...heroItem(0.08, reduceMotion)}
+                className="font-serif text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-[3.25rem]"
               >
-                <Image
-                  src="/bali-workspace-hero.jpg"
-                  alt="Workspace builder interface preview"
-                  fill
-                  priority
-                  className="object-cover"
-                />
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent"
-                  initial={reduceMotion ? false : { opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.45, duration: 0.5 }}
-                />
+                Build your ideal workspace.
+                <span className="mt-1 block bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  We deliver it today.
+                </span>
+              </motion.h1>
+
+              <motion.p
+                {...heroItem(0.16, reduceMotion)}
+                className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground"
+              >
+                A premium rental experience for nomad professionals. Build your
+                setup in 3D, see transparent pricing instantly, and move from
+                request to delivery with trust signals at every step.
+              </motion.p>
+
+              <motion.div
+                {...heroItem(0.24, reduceMotion)}
+                className="mt-8 flex flex-col gap-3 sm:flex-row"
+              >
+                <button
+                  onClick={onGetStarted}
+                  className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 font-semibold text-primary-foreground shadow-xl shadow-primary/30 transition-all duration-300 hover:bg-primary/90 hover:shadow-2xl hover:shadow-primary/35 active:scale-[0.98]"
+                >
+                  Start Building
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </button>
+                <button
+                  onClick={handleSeeFlow}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border bg-background/60 px-8 py-4 font-semibold text-foreground backdrop-blur-sm transition-all hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98]"
+                >
+                  <PlayCircle className="h-4 w-4 text-primary" />
+                  How It Works
+                </button>
               </motion.div>
 
               <motion.div
-                initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.55, duration: 0.45, ease: motionEase }}
-                className="absolute -bottom-4 left-6 rounded-xl border border-border bg-background/95 px-3 py-2 shadow-lg backdrop-blur"
+                {...heroItem(0.32, reduceMotion)}
+                className="mt-8 grid gap-3 sm:grid-cols-3"
               >
-                <p className="text-xs font-medium text-foreground">
-                  Est. weekly from $24
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  Desk + Chair + Monitor setup
-                </p>
+                {[
+                  'No hidden fees',
+                  'No payment until host confirms',
+                  'Proof Center records',
+                ].map((label) => (
+                  <span
+                    key={label}
+                    className="inline-flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2 text-xs font-medium text-muted-foreground"
+                  >
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" />
+                    {label}
+                  </span>
+                ))}
               </motion.div>
+            </div>
+
+            <motion.div
+              {...heroItem(0.12, reduceMotion)}
+              className="lg:col-span-6"
+            >
               <motion.div
-                initial={reduceMotion ? false : { opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6, duration: 0.45, ease: motionEase }}
-                className="absolute -top-3 right-6 rounded-full border border-primary/30 bg-background/95 px-3 py-1 shadow-lg backdrop-blur"
+                whileHover={reduceMotion ? undefined : { y: -6, rotate: 0.5 }}
+                transition={{ duration: 0.45, ease: motionEase }}
+                className="relative mx-auto max-w-2xl"
               >
-                <p className="text-[11px] font-semibold text-primary">
-                  Trust score 98.9%
-                </p>
+                <motion.div
+                  aria-hidden
+                  className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-primary/20 via-transparent to-accent/15 blur-2xl"
+                />
+                <div className="relative rounded-[1.75rem] border border-border/60 bg-card/90 p-3 shadow-2xl shadow-black/10 backdrop-blur-xl">
+                  <div className="mb-3 flex items-center gap-2 px-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      monis.rent/builder
+                    </span>
+                  </div>
+
+                  <div className="relative aspect-[16/10] overflow-hidden rounded-2xl ring-1 ring-border/50">
+                    <Image
+                      src="/bali-workspace-hero.jpg"
+                      alt="Workspace builder interface preview"
+                      fill
+                      priority
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                  </div>
+
+                  <div className="absolute -bottom-5 left-8 rounded-2xl border border-border/80 bg-background/95 px-4 py-3 shadow-xl backdrop-blur-md">
+                    <p className="text-sm font-semibold text-foreground">
+                      Est. weekly from $24
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Desk + Chair + Monitor setup
+                    </p>
+                  </div>
+                  <div className="absolute -top-4 right-8 rounded-full border border-primary/30 bg-background/95 px-4 py-1.5 shadow-lg backdrop-blur-md">
+                    <p className="text-xs font-bold text-primary">
+                      Trust score 98.9%
+                    </p>
+                  </div>
+                </div>
               </motion.div>
             </motion.div>
           </motion.div>
         </div>
+      </section>
 
-        <StaggerGroup className="mt-14 grid gap-4 md:grid-cols-3">
-          {benefitCards.map((benefit) => (
-            <StaggerItem key={benefit.title}>
-              <motion.div
-                whileHover={reduceMotion ? undefined : { y: -3 }}
-                transition={{ duration: 0.3, ease: motionEase }}
-                className="h-full rounded-2xl border border-border bg-card/90 p-5 shadow-sm transition-shadow duration-300 hover:shadow-md"
-              >
-                <motion.div
-                  className="mb-4 flex items-center justify-between"
-                  initial={false}
-                >
-                  <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                    <benefit.icon className="h-4 w-4" />
-                  </div>
-                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary">
-                    {benefit.chip}
-                  </span>
-                </motion.div>
-                <h3 className="text-base font-semibold text-foreground">
-                  {benefit.title}
-                </h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {benefit.description}
-                </p>
-              </motion.div>
-            </StaggerItem>
-          ))}
-        </StaggerGroup>
+      <LandingPersonas />
+      <LandingBenefits />
 
+      <motion.div className="mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 lg:px-8">
         <HowItWorks ref={stepsRef} onGetStarted={onGetStarted} />
       </motion.div>
-    </section>
+    </>
   );
 }
